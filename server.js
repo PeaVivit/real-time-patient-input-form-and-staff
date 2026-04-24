@@ -1,9 +1,12 @@
-const { createServer } = require("http");
+const http = require("http");
 const { Server } = require("socket.io");
 
-const httpServer = createServer();
+const server = http.createServer((req, res) => {
+  res.writeHead(200);
+  res.end("OK");
+});
 
-const io = new Server(httpServer, {
+const io = new Server(server, {
   cors: {
     origin: "*",
   },
@@ -13,8 +16,6 @@ io.on("connection", (socket) => {
   console.log("User connected");
 
   socket.on("patient:update", (data) => {
-    console.log("typing...", data);
-
     socket.broadcast.emit("patient:data", {
       data,
       status: "typing",
@@ -22,8 +23,6 @@ io.on("connection", (socket) => {
   });
 
   socket.on("patient:submit", (data) => {
-    console.log("submitted!", data);
-
     io.emit("patient:data", {
       data,
       status: "submitted",
@@ -31,6 +30,8 @@ io.on("connection", (socket) => {
   });
 });
 
-httpServer.listen(4000, () => {
-  console.log("Socket Server running on http://localhost:4000");
+const PORT = process.env.PORT || 4000;
+
+server.listen(PORT, () => {
+  console.log("Server running on port", PORT);
 });
